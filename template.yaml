@@ -1,5 +1,4 @@
 Resources:
-  # Existing Lambda function assumed here
 
   ImageUploadApi:
     Type: AWS::ApiGateway::RestApi
@@ -46,3 +45,5 @@ Outputs:
   ApiURL:
     Description: "Invoke URL for image upload"
     Value: !Sub "https://${ImageUploadApi}.execute-api.${AWS::Region}.amazonaws.com/prod/upload"
+    Export:
+      Name: ImageUploadInvokeURL
