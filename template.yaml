@@ -1,5 +1,22 @@
 Resources:
 
+  UploadFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: UploadFunction
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Role: arn:aws:iam::123456789012:role/YourLambdaExecutionRole # Replace this
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            console.log("Event received:", event);
+            return {
+              statusCode: 200,
+              body: JSON.stringify({ message: "Image uploaded" })
+            };
+          };
+
   ImageUploadApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -23,8 +40,7 @@ Resources:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri: !Sub
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadFunction.Arn}/invocations
-          - UploadFunction: !GetAtt UploadFunction.Arn
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadFunction.Arn}/invocations
 
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -39,11 +55,9 @@ Resources:
       FunctionName: !Ref UploadFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ImageUploadApi}/*/*/upload"
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ImageUploadApi}/*/POST/upload
 
 Outputs:
-  ApiURL:
-    Description: "Invoke URL for image upload"
+  ApiInvokeURL:
+    Description: "Invoke URL for image upload endpoint"
     Value: !Sub "https://${ImageUploadApi}.execute-api.${AWS::Region}.amazonaws.com/prod/upload"
-    Export:
-      Name: ImageUploadInvokeURL
