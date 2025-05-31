@@ -1,4 +1,48 @@
+Resources:
+  # Existing Lambda function assumed here
+
+  ImageUploadApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: ImageUploadApi
+
+  UploadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ImageUploadApi
+      ParentId: !GetAtt ImageUploadApi.RootResourceId
+      PathPart: upload
+
+  UploadMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref UploadResource
+      RestApiId: !Ref ImageUploadApi
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadFunction.Arn}/invocations
+          - UploadFunction: !GetAtt UploadFunction.Arn
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: UploadMethod
+    Properties:
+      RestApiId: !Ref ImageUploadApi
+      StageName: prod
+
+  LambdaPermissionForApiGateway:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ImageUploadApi}/*/*/upload"
+
 Outputs:
   ApiURL:
-    Description: "Invoke URL for upload"
-    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/upload"
+    Description: "Invoke URL for image upload"
+    Value: !Sub "https://${ImageUploadApi}.execute-api.${AWS::Region}.amazonaws.com/prod/upload"
