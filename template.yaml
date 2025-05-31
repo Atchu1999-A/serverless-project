@@ -42,7 +42,7 @@ Resources:
         Uri: !Sub
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadFunction.Arn}/invocations
 
-  ApiDeployment:
+  ApiDeploymentv2:
     Type: AWS::ApiGateway::Deployment
     DependsOn: UploadMethod
     Properties:
