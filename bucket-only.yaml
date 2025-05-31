@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 bucket for Lambda ZIP deployment
+
+Resources:
+  LambdaDeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: my-unique-lambda-deploy-bucket-123456
+      VersioningConfiguration:
+        Status: Enabled
+      AccessControl: Private
