@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+  pre_build:
+    commands:
+      - echo Zipping Lambda functions
+      - zip -r upload_image.zip lambda/upload_image/
+      - zip -r process_image.zip lambda/process_image/
+  build:
+    commands:
+      - echo Uploading to S3
+      - aws s3 cp upload_image.zip s3://<CODE-BUCKET>/lambda/upload_image.zip
+      - aws s3 cp process_image.zip s3://<CODE-BUCKET>/lambda/process_image.zip
+      - echo Deploying via CloudFormation
+      - aws cloudformation deploy \
+          --template-file template.yaml \
+          --stack-name image-upload-stack \
+          --capabilities CAPABILITY_NAMED_IAM

@@ -1,0 +1,4 @@
+Outputs:
+  ApiURL:
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/upload"
+    Description: "Invoke URL for upload"
